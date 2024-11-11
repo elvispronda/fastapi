@@ -44,7 +44,7 @@ def find_index_post(id):
            
 @app.get("/")
 def root():
-    return {"Hello": "world"}
+    return {"Hello": "world this is my first fastapi project !"}
 
 @app.get("/posts")
 def get_posts():
