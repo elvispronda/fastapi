@@ -1,5 +1,5 @@
 #HERE WE USE FASTAPI WITH SQLALCHEMY :USING ORM
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI,Response, status, HTTPException, Depends
 from fastapi.params import Body
 from pydantic import BaseModel
@@ -7,19 +7,14 @@ from random import randrange
 import psycopg2
 from  psycopg2.extras  import RealDictCursor
 import time
-from . import models
+from . import models ,schemas
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 
 models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()        
-        
-class Post(BaseModel):
-    title :str
-    content: str 
-    published: bool = True
-    #rating :Optional[int ] = None
+
     
 while True:    
     try:
@@ -37,14 +32,10 @@ while True:
            
 @app.get("/")
 def root():
-    return {"Hello": "world this is my first fastapi project !"}
+    return {"Hello": "world!"}
 
-@app.get("/testing")
-def test_posts(db:Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-    return {"data": posts}
 
-@app.get("/posts")
+@app.get("/posts", response_model = List [schemas.Post])
 def get_posts(db:Session = Depends(get_db)):
     #
     #How to use SQL
@@ -53,11 +44,11 @@ def get_posts(db:Session = Depends(get_db)):
     #
     #How to use ORM
     posts = db.query(models.Post).all()
-    return{"data":posts}
+    return posts
 
  
-@app.post("/posts",status_code=status.HTTP_201_CREATED )
-def create_posts( post:Post, db:Session = Depends(get_db)):
+@app.post("/posts",status_code=status.HTTP_201_CREATED, response_model=schemas.Post )
+def create_posts( post:schemas.PostCreate, db:Session = Depends(get_db)):
     ###############################################
     #How to use SQL
     # cursor.execute("""INSERT INTO posts(title,content,published) VALUES (%s , %s , %s)RETURNING* """ ,
@@ -70,10 +61,10 @@ def create_posts( post:Post, db:Session = Depends(get_db)):
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return {"data": new_post}
+    return new_post
 
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schemas.Post)
 def get_post(id: int, db:Session = Depends(get_db)):
     #
     #How to use SQL
@@ -86,7 +77,7 @@ def get_post(id: int, db:Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} was not found")   
     print(post)
-    return{"post_detail":post}
+    return post
 
 
 @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
@@ -108,8 +99,8 @@ def delete_post(id:int,db:Session = Depends(get_db)):
    db.commit()  
    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@app.put("/posts/{id}")
-def update_post(id:int,updated_post:Post,db:Session = Depends(get_db)):
+@app.put("/posts/{id}", response_model=schemas.Post)
+def update_post(id:int,updated_post:schemas.PostCreate,db:Session = Depends(get_db)):
     #
     #How to do it using SQL
     #cursor.execute(""" UPDATE posts SET title =%s, content= %s, published= %s WHERE id=%s RETURNING*""",
@@ -127,4 +118,4 @@ def update_post(id:int,updated_post:Post,db:Session = Depends(get_db)):
     
     post_query.update(updated_post.dict(),synchronize_session = False)
     db.commit()
-    return{"data": post_query.first()}    
+    return post_query.first()   
