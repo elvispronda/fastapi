@@ -5,12 +5,7 @@ from fastapi import FastAPI
 from . import models 
 from .database import engine
 from .routers import post, user, auth
-from pydantic import BaseSettings
-
-class Settings(BaseSettings):
-    database_password : str = "localhost"
-    database_username : str = "postgress"
-    secret_key : str = "234gdkgjhhfvn2345fc09"
+from .config import settings
 
 #models.Base.metadata.create_all(bind = engine)
 
