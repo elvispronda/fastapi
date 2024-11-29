@@ -14,14 +14,6 @@ class PostCreate(PostBase):
 
 
 
-class Post(PostBase):
-    id : int
-    created_at : datetime
-    
-    class config :
-        orm_mode = True
-
-
 class UserCreate(BaseModel):
     email : EmailStr
     password : str
@@ -47,3 +39,16 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Union[str, int]  # Accepts both string and integer types
+
+
+
+
+class Post(PostBase):
+    id : int
+    created_at : datetime
+    owner_id : int
+    owner : Userout
+    
+    class config :
+        orm_mode = True
+
