@@ -42,7 +42,6 @@ class TokenData(BaseModel):
 
 
 
-
 class Post(PostBase):
     id : int
     created_at : datetime
@@ -51,4 +50,5 @@ class Post(PostBase):
     
     class config :
         orm_mode = True
+
 
