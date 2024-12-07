@@ -7,6 +7,8 @@ router = APIRouter(prefix="/vote", tags=['Vote'])
 
 @router.post("/",status_code=status.HTTP_201_CREATED) # response_model=schemas.Vote )
 def Vote( vote:schemas.Vote, db:Session = Depends(get_db), current_user : str = Depends(oauth2.get_current_user)):
+    
+    
     vote_query = (models.Vote).filter(models.Vote.post_id == vote.post_id, models.Vote.user_id == current_user.id)
     found_vote = vote_query.first()
     if (vote.dir == 1):
