@@ -1,27 +1,48 @@
 from fastapi import FastAPI,Response, status, HTTPException, Depends, APIRouter
-from typing import Optional,  List 
+from typing import Optional,List, Dict 
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from .. import models ,schemas, utils,oauth2
+from sqlalchemy import func
+from .. import models ,schemas,oauth2
 from ..database import  get_db
 
 router = APIRouter(prefix="/posts", tags=['Posts'])
 
-@router.get("/", response_model = List [schemas.Post])
+@router.get("/", response_model = List[schemas.PostOut])
 def get_posts(db:Session = Depends(get_db), current_user : str = Depends(oauth2.get_current_user),
               limit : int = 5, skip : int = 0, search :Optional[str] = ""):
+              
     #
     #How to use SQL
     # cursor.execute("""SELECT * FROM posts """)
     # posts=cursor.fetchall()
     #
-    #How to use ORM
-    
+    #How to use ORM#
     ## filter all individuals post not for every user
     #posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    ##
     
+    ## JOIN TABLES POST AND VOTE TABLES
+  
+    
+    # cursor.execute(""" SELECT * FROM posts """)
+    # posts = cursor.fetchall()
+    # posts =db.execute('select posts.* ,COUNT(votes.post_id)as votes from posts LEFT JOIN votes ON posts.id =votes.post_id GROUP BY posts.id')
+    # result = []
+    
+    # for post in posts:
+    #     result.append(dict(post))
+    #     
+        
+  
     ##filter all users posts at the same time
-    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
-    return posts
+    #posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    
+    #results = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(
+        #models.Vote, models.Vote.post_id == models.Post.id, isouter = True).group_by(models.Post.id).all()
+    results = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).all()
+    #print(results)
+    return results
 
  
 @router.post("/",status_code=status.HTTP_201_CREATED, response_model=schemas.Post )

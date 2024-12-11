@@ -14,13 +14,6 @@ class PostBase(BaseModel):
 class PostCreate(PostBase):
     pass
 
-
-
-class UserCreate(BaseModel):
-    email : EmailStr
-    password : str
-    
-    
 class Userout(BaseModel):
     id : int
     email : EmailStr
@@ -28,7 +21,25 @@ class Userout(BaseModel):
     
     class config :
         orm_mode = True
-       
+        
+        
+class Post(PostBase):
+    id : int
+    created_at : datetime
+    owner_id : int
+    owner : Userout
+    
+    class config :
+        orm_mode = True
+        
+class PostOut(PostBase):
+    Post : Post
+    votes : int    
+
+class UserCreate(BaseModel):
+    email : EmailStr
+    password : str
+    
        
 class UserLogin(BaseModel):
     email : EmailStr
@@ -44,16 +55,6 @@ class TokenData(BaseModel):
 
 
 
-class Post(PostBase):
-    id : int
-    created_at : datetime
-    owner_id : int
-    owner : Userout
-    
-    class config :
-        orm_mode = True
-
-
 class Vote(BaseModel):
-    id : int
+    post_id : int
     dir : conint(le=1) # type: ignore
